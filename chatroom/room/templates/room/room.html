@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Chat Room</title>
+</head>
+<style>
+    #message-box {
+        border: solid black
+    }
+</style>
+
+<body>
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
+    <div id="message-box">
+
+    </div>
+    <input id="chat-message-input" type="text" size="100"><br>
+    <input id="chat-message-submit" type="button" value="Send">
+    {{ room_name|json_script:"room-name" }}
+
+    <script src="https://code.jquery.com/jquery-3.6.3.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
+
+    <script>
+        //console.log(uuidv4())
+        const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+        const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/room/'
+            + roomName
+            + '/'
+        );
+
+        chatSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            let id = 0
+            if (data.type === "new_message") {
+                //document.querySelector('#chat-log').value += (data.message + '\n');
+                //console.log(data.id)
+                id++
+                var text = $('<p id="' + id + '">' + data.message + '<div data-myid="' + id + '" class="remove-btn">X</div></p>');
+                $("#message-box").append(text)
+            } else {
+                $("#" + data.id).remove();
+            }
+
+
+        };
+
+        $(document).ready(function () {
+            $(document).on("click", ".remove-btn", function (e) {
+                var myid = $(this).data('myid');
+                chatSocket.send(JSON.stringify({
+                    "type": "delete",
+                    'message': myid
+                }));
+            })
+        })
+
+        chatSocket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function (e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function (e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                "type": "newMessage",
+                'message': message
+            }));
+            messageInputDom.value = '';
+        };
+    </script>
+</body>
+
+</html>
