@@ -23,10 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-3b@#r*1w*27$skc)*#j0i=mnaq7d$nofiaot9jq!^y)c9a+kve'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
-CORS_ALLOW_ALL_ORIGINS=True
+ALLOWED_HOSTS = ["chatterpod.ir"]
+
 
 
 # Application definition
